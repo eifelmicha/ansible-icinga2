@@ -104,3 +104,52 @@
 
 - name: do facts module to get latest information
   setup:
+
+- name: Install Icinga2 packages on Debian / Ubuntu
+  apt:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - icinga2-common
+    - icinga2-bin
+    - icinga2
+    - libmonitoring-plugin-perl
+    - libwww-perl
+    - monitoring-plugins
+    - nagios-plugins-contrib
+    - pynag
+    - python-requests
+    - python3-requests
+  when: ansible_os_family | lower == 'debian' and icinga2_install_plugins | bool
+  tags:
+  - icinga2
+  - packages
+
+- name: Install Icinga2 Debian Plugin Package
+  apt:
+    deb: https://s3.qu.michaelsiebertz.de/seed/icinga2-plugins.deb
+  when: ansible_os_family | lower == 'debian' and icinga2_install_plugins | bool
+  tags:
+  - icinga2
+
+- name: Create symbolic link for check_mem
+  file:
+   src: "{{ monitoring_plugins_directory }}/check_memory"
+   dest: "{{ monitoring_plugins_directory }}/check_mem"
+   state: link
+  when: ansible_os_family | lower == 'debian' and icinga2_install_plugins | bool
+  tags:
+  - icinga2
+
+- name: check /etc/icinga2/conf.d/
+  find:
+    paths: /etc/icinga2/conf.d/
+    patterns: ".*.conf"
+    use_regex: true
+  register: wildcard_files_to_delete
+
+- name: clean /etc/icinga2/conf.d/
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ wildcard_files_to_delete.files }}"
