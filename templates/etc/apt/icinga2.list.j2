@@ -1,3 +1,4 @@
 {{ ansible_managed | comment }}
 
 deb https://packages.icinga.com/{{ ansible_distribution | lower }} icinga-{{ ansible_distribution_release | lower }} main
+deb https://packages.icinga.com/{{ ansible_distribution | lower }} icinga-{{ ansible_distribution_release | lower }}-testing main

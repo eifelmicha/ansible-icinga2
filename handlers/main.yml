@@ -44,3 +44,15 @@
 #   register: icinga2_downtime_system
 #   with_dict:
 #     "{{ icinga2_masters }}"
+
+- name: icingadb-redis-restart
+  service:
+    name: "{{ icingadb_redis_service_name }}"
+    state: restarted
+    enabled: yes
+
+- name: icingadb-restart
+  service:
+    name: "{{ icingadb_service_name }}"
+    state: restarted
+    enabled: yes

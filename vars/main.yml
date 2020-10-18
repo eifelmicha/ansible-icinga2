@@ -168,6 +168,30 @@ icinga2_ido_default:
     schema_file: /usr/share/icinga2-ido-mysql/schema/mysql.sql
     schema_upgrade: /usr/share/icinga2-ido-mysql/schema/upgrade
 
+icingadb_mysql_default:
+  type: mysql
+  enabled: true
+  user: 'icingadb'
+  password: 'icingadb'
+  host: '127.0.0.1'
+  database: 'icingadb'
+  port: 3306
+  socket: /run/mysqld.sock
+  # Max age for ... Defaults to 0 (never)
+  cleanup: {}
+
+icingadb_redis_default:
+  host: 127.0.0.1
+  port: 6380
+  config_dir: /etc/icinga-redis
+  user: icinga-redis
+  group: icinga-redis
+  pool_size: 64
+  protected_mode: 'yes'
+  binds:
+    - "127.0.0.1"
+    - "::1"
+
 icinga2_api_default:
   enabled: true
   accept_config: true

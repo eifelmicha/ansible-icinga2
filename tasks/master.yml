@@ -89,6 +89,7 @@
 
 - include_tasks: master/configure.yml
 - include_tasks: master/features.yml
+- include_tasks: master/icingadb.yml
 
 - include_tasks: master/global-templates.yml
   when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn

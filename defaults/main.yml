@@ -49,6 +49,7 @@ icinga2_master_features_disabled:
 icinga2_master_features_enabled:
   - checker
   - api
+  - icingadb
   - ido-mysql
   - mainlog
   - notification
@@ -56,6 +57,8 @@ icinga2_master_features_enabled:
 icinga2_features: {}
 
 icinga2_api: {}
+
+icingadb_mysql: {}
 
 icinga2_ido: {}
 
@@ -91,3 +94,88 @@ icinga2_hostgroups: {}
 icinga2_servicegroups: {}
 
 icinga2_master_port: 5665
+
+# IcingaDB
+icingadb_redis_service_name: icingadb-redis
+icingadb_service_name: icingadb
+
+icingadb_metrics_host: false
+icingadb_metrics_port: false
+
+icingadb_user: icingadb
+icingadb_group: icingadb
+
+icingadb_config_dir: /etc/icingadb
+icingadb_logging_level: info
+
+icingadb_slowlog_log_slower_than: 10000
+icingadb_slowlog_max_len: 128
+icingadb_mysql_max_open_conns: 50
+icingadb_mysql_schema_file: /usr/share/icingadb/schema/mysql/mysql.schema.sql
+
+icingadb_mysql: {}
+  # user: icingadb
+  # password: icingadb
+  # database: icingadb
+  # host: 127.0.0.1
+  # port: 3306
+  # cleanup:
+  #   acknowledgements_age: 72h
+
+icingadb_redis:
+  host: 127.0.0.1
+  port: 6380
+  config_dir: /etc/icinga-redis
+  user: icinga-redis
+  group: icinga-redis
+  pool_size: 64
+  protected_mode: 'yes'
+  binds:
+    - "127.0.0.1"
+    - "::1"
+  tcp_backlog: 511
+  timeout: 0
+  tcp_keepalive: 300
+  supervised: systemd
+  pidfile: /var/run/icinga-redis/icingadb-redis-server.pid
+  loglevel: notice
+  logfile: /var/log/icinga-redis/icingadb-redis-server.log
+  databases: 16
+  always_show_logo: 'yes'
+  save:
+    - 900 1
+    - 300 10
+    - 60 10000
+  stop_writes_on_bgsave_error: 'yes'
+  rdbcompression: 'yes'
+  rdbchecksum: 'yes'
+  dbfilename: dump.rdb
+  dir: /var/lib/icinga-redis/icingadb-redis
+  replica_serve_stale_data: 'yes'
+  replica_read_only: 'yes'
+  repl_diskless_sync: 'no'
+  repl_diskless_sync_delay: 5
+  repl_disable_tcp_nodelay: 'no'
+  replica_priority: 100
+  lazyfree_lazy_eviction: 'no'
+  lazyfree_lazy_expire: 'no'
+  lazyfree_lazy_server_del: 'no'
+  lazy_flush: 'no'
+  appendonly: 'no'
+  appendfilename: appendonly.aof
+  appendfsync: everysec
+  no_appendfsync_on_rewrite: 'no'
+  auto_aof_rewrite_percentage: 100
+  auto_aof_rewrite_min_size: 64mb
+  aof_load_truncated: 'yes'
+  aof_use_rdb_preamble: 'yes'
+  lua_time_limit: 5000
+  latency_monitor_threshold: 0
+  client_output_buffer_limits:
+    - normal 0 0 0
+    - replica 256mb 64mb 60
+    - pubsub 32mb 8mb 60
+  hz: 10
+  dynamic_hz: 'yes'
+  aof_rewrite_incremental_fsync: 'yes'
+  rdb_save_incremental_fsync: 'yes'

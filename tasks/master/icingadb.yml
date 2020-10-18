@@ -1,0 +1,79 @@
+---
+- name: define graphite feature state
+  set_fact:
+    feature_icingadb_state: "{{ 'present' if icinga2_master_features_enabled | join('|') |
+      regex_search('icingadb') else 'absent' }}"
+
+- name: RedHat - install icingadb packages
+  yum:
+    name: "{{ icingadb_packages }}"
+    state: present
+  vars:
+    icingadb_packages:
+      - icingadb
+      - icingadb-redis
+  when: ansible_os_family | lower == 'redhat'
+
+- name: Debian - Install IcingaDB packages
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - icingadb
+    - icingadb-redis
+  when: ansible_os_family | lower == 'debian'
+
+- name: Import schema for icingadb
+  shell: >
+    mysql \
+      --host={{ icingadb_mysql.host }} \
+      --user={{ icingadb_mysql.user }} \
+      --password={{ icingadb_mysql.password }} \
+      --database={{ icingadb_mysql.database }} \
+      --force \
+      < {{ icingadb_mysql_schema_file }}
+  changed_when: false
+  ignore_errors: true
+  no_log: true
+  when: icinga2_primary_master is defined and icinga2_primary_master == ansible_fqdn
+
+- name: write configuration to /etc/icingadb/icingadb.ini
+  template:
+    src: etc/icingadb.ini.j2
+    dest: "{{ icingadb_config_dir }}/icingadb.ini"
+    owner: "{{ icingadb_user }}"
+    group: "{{ icingadb_group }}"
+    mode: 0640
+  notify: icingadb-restart
+
+- name: write configuration to /etc/icinga-redis/icinga-redis.conf
+  template:
+    src: etc/icingadb-redis.conf.j2
+    dest: "{{ icingadb_redis.config_dir }}/icingadb-redis.conf"
+    owner: "{{ icingadb_redis.user }}"
+    group: "{{ icingadb_redis.group }}"
+    mode: 0640
+  notify: icingadb-redis-restart
+
+- name: icingadb-redis-restart
+  service:
+    name: "{{ icingadb_redis_service_name }}"
+    state: restarted
+    enabled: yes
+
+- name: icingadb-restart
+  service:
+    name: "{{ icingadb_service_name }}"
+    state: restarted
+    enabled: yes
+
+- name: enable icingadb feature
+  icinga2_feature:
+    name: icingadb
+    state: "{{ feature_icingadb_state }}"
+  notify:
+    - check configuration
+    - restart icinga2
+  tags:
+    - icinga2
+    - features
